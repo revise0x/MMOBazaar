@@ -32,6 +32,13 @@
             <artifactId>anvilgui</artifactId>
             <version>1.10.5-SNAPSHOT</version>
         </dependency>
+        <!-- VaultAPI: Beware of JUnit Vulnerability, Ignored -->
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
