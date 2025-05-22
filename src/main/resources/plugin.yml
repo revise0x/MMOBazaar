@@ -1,0 +1,8 @@
+name: MMOBazaar
+version: 1.0.0
+main: io.github.revise0x.mmobazaar.MMOBazaar
+api-version: 1.21.5
+author: REVISE
+description: MMOBazaar brings Metin2-style market systems to Minecraft. Players can create personalized markets with item-based GUI trading.
+website: https://github.com/revise0x/MMOBazaar
+softdepend: [Vault]
