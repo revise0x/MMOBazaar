@@ -6,3 +6,14 @@ author: REVISE
 description: MMOBazaar brings Metin2-style market systems to Minecraft. Players can create personalized markets with item-based GUI trading.
 website: https://github.com/revise0x/MMOBazaar
 softdepend: [Vault]
+
+commands:
+  mmobazaar:
+    description: MMOBazaar admin commands
+    usage: /<command> give <player>
+    permission: mmobazaar.admin
+permissions:
+  mmobazaar.admin:
+    description: Allows admin use of MMOBazaar commands
+    default: op
+
