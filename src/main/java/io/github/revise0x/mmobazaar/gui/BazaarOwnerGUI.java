@@ -29,19 +29,15 @@ public class BazaarOwnerGUI {
         // Register session for event handling
         context.guiSessions.setOwnerGUI(player.getUniqueId(), this);
 
+        // Lock the bazaar and close customer GUIs for this bazaar
+        context.guiSessions.closeCustomerGUIsFor(data.getId());
+        context.guiSessions.closeConfirmingGUIsFor(data.getId());
+
         Inventory gui = Bukkit.createInventory(null, 36, data.getName());
 
         // Listings 0–26
         for (int slot = 0; slot <= 26; slot++) {
-            BazaarListing listing = data.getListings().get(slot);
-            if (listing != null) {
-                ItemStack item = ListingLoreUtil.withOwnerLore(
-                        listing.getItem(),
-                        listing.getPrice(),
-                        Bukkit.getOfflinePlayer(data.getOwner()).getName()
-                );
-                gui.setItem(slot, item);
-            }
+            updateSlot(gui, slot);
         }
 
         // Filler glass panes on final row
@@ -105,6 +101,12 @@ public class BazaarOwnerGUI {
                 context.guiSessions.removeOwnerGUI(player.getUniqueId());
             }
             case 32 -> {
+                double balance = context.vaultHook.getEconomy().getBalance(player);
+                if (balance < context.creationCost) {
+                    player.sendMessage("§cYou don’t have enough money to extend your bazaar.");
+                    return;
+                }
+
                 boolean extended = data.extendExpiration(86400000);
                 if (extended) {
                     context.vaultHook.getEconomy().withdrawPlayer(player, 1000.0);
@@ -139,7 +141,7 @@ public class BazaarOwnerGUI {
         return days + "d " + hours + "h " + minutes + "m";
     }
 
-    private void updateBankButton(Inventory gui) {
+    public void updateBankButton(Inventory gui) {
         ItemStack bank = new ItemStack(Material.GOLD_INGOT);
         ItemMeta meta = bank.getItemMeta();
         if (meta != null) {
@@ -165,6 +167,20 @@ public class BazaarOwnerGUI {
             clock.setItemMeta(meta);
         }
         gui.setItem(32, clock);
+    }
+
+    public void updateSlot(Inventory gui, int slot) {
+        BazaarListing listing = data.getListings().get(slot);
+        if (listing != null) {
+            ItemStack item = ListingLoreUtil.withOwnerLore(
+                    listing.getItem(),
+                    listing.getPrice(),
+                    Bukkit.getOfflinePlayer(data.getOwner()).getName()
+            );
+            gui.setItem(slot, item);
+        } else {
+            gui.setItem(slot, new ItemStack(Material.AIR));
+        }
     }
 
     public BazaarData getData() {

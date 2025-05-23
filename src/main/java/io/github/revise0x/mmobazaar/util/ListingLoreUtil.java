@@ -48,4 +48,19 @@ public class ListingLoreUtil {
 
         return clone;
     }
+
+    public static ItemStack stripListingLore(ItemStack item, int linesToRemove) {
+        ItemStack clone = item.clone();
+        ItemMeta meta = clone.getItemMeta();
+
+        if (meta != null && meta.hasLore() && meta.getLore() != null) {
+            List<String> lore = new ArrayList<>(meta.getLore());
+            int newSize = Math.max(0, lore.size() - linesToRemove);
+            lore = lore.subList(0, newSize);
+            meta.setLore(lore);
+            clone.setItemMeta(meta);
+        }
+
+        return clone;
+    }
 }

@@ -1,9 +1,10 @@
 package io.github.revise0x.mmobazaar.gui;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class GUISessionManager {
     private final Map<UUID, BazaarOwnerGUI> ownerGuis = new HashMap<>();
@@ -36,15 +37,47 @@ public class GUISessionManager {
 
     private final Map<UUID, ConfirmPurchaseGUI> confirming = new HashMap<>();
 
-    public void setConfirming(UUID playerId, ConfirmPurchaseGUI gui) {
+    public void setConfirmingGUI(UUID playerId, ConfirmPurchaseGUI gui) {
         confirming.put(playerId, gui);
     }
 
-    public Optional<ConfirmPurchaseGUI> getConfirming(UUID playerId) {
+    public Optional<ConfirmPurchaseGUI> getConfirmingGUI(UUID playerId) {
         return Optional.ofNullable(confirming.get(playerId));
     }
 
-    public void removeConfirming(UUID playerId) {
+    public void removeConfirmingGUI(UUID playerId) {
         confirming.remove(playerId);
+    }
+
+    public void closeCustomerGUIsFor(UUID bazaarId) {
+        Set<UUID> toRemove = customerGUIs.entrySet().stream()
+                .filter(entry -> entry.getValue().getData().getId().equals(bazaarId))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        for (UUID uuid : toRemove) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                p.sendMessage("§eThis bazaar is being updated. Please try again in a moment.");
+                p.closeInventory();
+            }
+            customerGUIs.remove(uuid);
+        }
+    }
+
+    public void closeConfirmingGUIsFor(UUID bazaarId) {
+        Set<UUID> toRemove = confirming.entrySet().stream()
+                .filter(entry -> entry.getValue().getData().getId().equals(bazaarId))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+
+        for (UUID uuid : toRemove) {
+            Player p = Bukkit.getPlayer(uuid);
+            if (p != null) {
+                p.sendMessage("§eThis bazaar is being updated. Please try again in a moment.");
+                p.closeInventory();
+            }
+            confirming.remove(uuid);
+        }
     }
 }

@@ -3,6 +3,7 @@ package io.github.revise0x.mmobazaar.listener;
 import io.github.revise0x.mmobazaar.MMOBazaar;
 import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
+import io.github.revise0x.mmobazaar.gui.BazaarCustomerGUI;
 import io.github.revise0x.mmobazaar.gui.BazaarOwnerGUI;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
@@ -43,10 +44,9 @@ public class BazaarInteractionListener implements Listener {
             BazaarOwnerGUI gui = new BazaarOwnerGUI(context, bazaar);
             gui.open(player);
         } else {
-            // Later: Customer GUI
-            player.sendMessage("§7Viewing bazaar as customer...");
-            // BazaarCustomerGUI.open(...)
+            // Customer GUI
+            BazaarCustomerGUI gui = new BazaarCustomerGUI(context, bazaar);
+            gui.open(player);
         }
     }
-
 }
