@@ -41,9 +41,6 @@ public class BazaarInteractionListener implements Listener {
             // Owner GUI
             BazaarOwnerGUI gui = new BazaarOwnerGUI(context, bazaar);
             gui.open(player);
-
-            // Optionally track the active GUI for click handling later
-            context.guiSessions.setOwnerGUI(player.getUniqueId(), gui);
         } else {
             // Later: Customer GUI
             player.sendMessage("§7Viewing bazaar as customer...");

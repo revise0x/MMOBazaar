@@ -43,7 +43,7 @@ public class MMOBazaar extends JavaPlugin {
         final GUISessionManager guiSessions = new GUISessionManager();
 
         // Setup context bundle for easier access to MMOBazaar
-        final MMOBazaarContext context = new MMOBazaarContext(vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions);
+        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions);
 
         // Prepare static GUIs
         final BazaarCreateGUI createGUI = new BazaarCreateGUI(context);

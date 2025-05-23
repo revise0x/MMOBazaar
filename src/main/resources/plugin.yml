@@ -16,4 +16,3 @@ permissions:
   mmobazaar.admin:
     description: Allows admin use of MMOBazaar commands
     default: op
-

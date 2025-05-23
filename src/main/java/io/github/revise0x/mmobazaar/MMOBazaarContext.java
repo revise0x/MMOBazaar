@@ -7,6 +7,7 @@ import io.github.revise0x.mmobazaar.gui.GUISessionManager;
 import io.github.revise0x.mmobazaar.item.BazaarBagFactory;
 
 public class MMOBazaarContext {
+    public final MMOBazaar plugin;
     public final VaultHook vaultHook;
     public final BazaarManager bazaarManager;
     public final BazaarBagFactory bagFactory;
@@ -14,7 +15,8 @@ public class MMOBazaarContext {
     public final MMOBazaarAPI api;
     public final GUISessionManager guiSessions;
 
-    public MMOBazaarContext(VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, double creationCost, MMOBazaarAPI api, GUISessionManager guiSessions) {
+    public MMOBazaarContext(MMOBazaar plugin, VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, double creationCost, MMOBazaarAPI api, GUISessionManager guiSessions) {
+        this.plugin = plugin;
         this.vaultHook = vaultHook;
         this.bazaarManager = manager;
         this.bagFactory = bagFactory;

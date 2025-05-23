@@ -1,12 +1,15 @@
 package io.github.revise0x.mmobazaar.gui;
 
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
+import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 public class BazaarCreateGUI {
     private final MMOBazaarContext context;
@@ -16,26 +19,26 @@ public class BazaarCreateGUI {
     }
 
     public void open(Player player) {
-        new AnvilGUI.Builder()
-                .onClose((stateSnapshot) -> {
-                    if (stateSnapshot.getText() == null || stateSnapshot.getText().trim().isEmpty()) {
-                        player.sendMessage("§cBazaar name cannot be empty.");
-                    }
+        new AnvilGUI.Builder().plugin(context.plugin).title("Bazaar Name").text("Enter name").itemLeft(new ItemStack(Material.NAME_TAG)).onClick((slot, state) -> {
+            if (slot != AnvilGUI.Slot.OUTPUT) return List.of(); // only act on confirmation
 
-                    boolean created = context.bazaarManager.createBazaar(player, stateSnapshot.getText().trim());
-                    if (created) {
-                        context.vaultHook.getEconomy().withdrawPlayer(player, context.creationCost);
-                        player.sendMessage("§aBazaar created and §f$" + context.creationCost + " §awithdrawn.");
-                    } else {
-                        player.sendMessage("§cFailed to create bazaar.");
-                        refundBag(player);
-                    }
-                })
-                .text("Enter bazaar name")
-                .itemLeft(new ItemStack(Material.NAME_TAG))
-                .title("Bazaar Name")
-                .plugin(org.bukkit.Bukkit.getPluginManager().getPlugin("MMOBazaar"))
-                .open(player);
+            String name = state.getText().trim();
+            if (name.isEmpty()) {
+                player.sendMessage("§cBazaar name cannot be empty.");
+                refundBag(player);
+                return List.of(AnvilGUI.ResponseAction.close());
+            }
+
+            return context.bazaarManager.createBazaar(player, name).map(data -> List.of(AnvilGUI.ResponseAction.close(), AnvilGUI.ResponseAction.run(() -> {
+                context.vaultHook.getEconomy().withdrawPlayer(player, context.creationCost);
+                player.sendMessage("§aBazaar created and §f$" + context.creationCost + " §awithdrawn.");
+                new BazaarOwnerGUI(context, data).open(player);
+            }))).orElseGet(() -> {
+                player.sendMessage("§cFailed to create bazaar.");
+                refundBag(player);
+                return List.of(AnvilGUI.ResponseAction.close());
+            });
+        }).open(player);
     }
 
     private void refundBag(Player player) {

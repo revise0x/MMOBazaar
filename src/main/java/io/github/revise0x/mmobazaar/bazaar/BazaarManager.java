@@ -19,10 +19,10 @@ public class BazaarManager {
         this.spawner = spawner;
     }
 
-    public boolean createBazaar(Player player, String name) {
+    public Optional<BazaarData> createBazaar(Player player, String name) {
         if (isTooClose(player.getLocation(), 2.5)) {
             player.sendMessage("§cYou are too close to another bazaar.");
-            return false;
+            return Optional.empty();
         }
 
         BazaarData data = new BazaarData(UUID.randomUUID(), player.getUniqueId(), name, player.getLocation());
@@ -30,7 +30,7 @@ public class BazaarManager {
         spawner.spawn(data);
 
         player.sendMessage("§aBazaar created: §f" + name);
-        return true;
+        return Optional.of(data);
     }
 
     public boolean rotateBazaar(BazaarData data, float amount) {

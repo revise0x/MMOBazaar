@@ -4,7 +4,6 @@ import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
 import io.github.revise0x.mmobazaar.bazaar.BazaarListing;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -25,6 +24,9 @@ public class BazaarOwnerGUI {
     }
 
     public void open(Player player) {
+        // Register session for event handling
+        context.guiSessions.setOwnerGUI(player.getUniqueId(), this);
+
         Inventory gui = Bukkit.createInventory(null, 36, data.getName());
 
         // Listings 0–26
@@ -125,5 +127,9 @@ public class BazaarOwnerGUI {
         long hours = (seconds / 3600) % 24;
         long days = seconds / 86400;
         return days + "d " + hours + "h " + minutes + "m";
+    }
+
+    public BazaarData getData() {
+        return data;
     }
 }
