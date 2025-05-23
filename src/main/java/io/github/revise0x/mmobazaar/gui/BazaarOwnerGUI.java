@@ -49,7 +49,7 @@ public class BazaarOwnerGUI {
 
         // Buttons
         gui.setItem(30, makeButton(Material.GOLD_INGOT, "§6Withdraw Earnings", "§7Click to withdraw all money"));
-        gui.setItem(31, makeButton(Material.BARRIER, "§cClose Bazaar", "§7Removes the bazaar and refunds items"));
+        gui.setItem(31, makeButton(Material.BARRIER, "§cDelete Bazaar", "§7Removes the bazaar and refunds items"));
         long millisLeft = data.getExpiresAt() - System.currentTimeMillis();
         gui.setItem(32, makeButton(Material.CLOCK, "§eTime Left: " + formatTime(millisLeft), "§7Click to extend by 1 day for $1000"));
         gui.setItem(35, makeButton(Material.COMPASS, "§bRotate Bazaar", "§7Click to rotate stand 15°"));
@@ -69,7 +69,10 @@ public class BazaarOwnerGUI {
                 open(player);
             }
             case 31 -> {
-                // 1. Refund items
+                // This is to prevent visual bugs as a safeguard, shouldn't matter
+                data.setClosed(true);
+
+                // Refund items
                 for (BazaarListing listing : data.getListings().values()) {
                     HashMap<Integer, ItemStack> leftovers = player.getInventory().addItem(listing.getItem());
                     for (ItemStack item : leftovers.values()) {
@@ -77,21 +80,21 @@ public class BazaarOwnerGUI {
                     }
                 }
 
-                // 2. Refund bank
+                // Refund bank
                 double withdrawn = data.withdrawAll();
                 context.vaultHook.getEconomy().depositPlayer(player, withdrawn);
 
-                // 3. Remove stand & unregister
+                // Remove stand & unregister
                 context.bazaarManager.removeBazaar(data.getId());
 
-                // 4. Notify
+                // Notify
                 player.sendMessage("§cYour bazaar has been closed.");
                 player.sendMessage("§7Items and §f$" + withdrawn + "§7 returned.");
 
-                // 5. Close inventory
+                // Close inventory
                 player.closeInventory();
 
-                // 6. Clear GUI session
+                // Clear GUI session
                 context.guiSessions.removeOwnerGUI(player.getUniqueId());
             }
             case 32 -> {

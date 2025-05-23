@@ -16,6 +16,7 @@ public class BazaarData {
     private final long createdAt;
     private long expiresAt; // mutable: extendable by owner
     private double bankBalance = 0.0;
+    private boolean closed = false;
 
     private final Map<Integer, BazaarListing> listings = new HashMap<>();
 
@@ -26,6 +27,14 @@ public class BazaarData {
         this.location = location;
         this.createdAt = System.currentTimeMillis();
         this.expiresAt = this.createdAt + TimeUnit.DAYS.toMillis(1); // default 1 day
+    }
+
+    public boolean isClosed() {
+        return closed;
+    }
+
+    public void setClosed(boolean closed) {
+        this.closed = closed;
     }
 
     public UUID getId() {

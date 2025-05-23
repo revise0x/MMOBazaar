@@ -2,7 +2,6 @@ package io.github.revise0x.mmobazaar;
 
 import io.github.revise0x.mmobazaar.api.MMOBazaarAPI;
 import io.github.revise0x.mmobazaar.bazaar.BazaarManager;
-import io.github.revise0x.mmobazaar.bazaar.BazaarSpawner;
 import io.github.revise0x.mmobazaar.commands.MMOBazaarCommand;
 import io.github.revise0x.mmobazaar.economy.VaultHook;
 import io.github.revise0x.mmobazaar.gui.BazaarCreateGUI;
@@ -36,8 +35,7 @@ public class MMOBazaar extends JavaPlugin {
         final double creationCost = 1000.0;
 
         // Setup MMOBazaar
-        final BazaarSpawner spawner = new BazaarSpawner();
-        final BazaarManager bazaarManager = new BazaarManager(spawner);
+        final BazaarManager bazaarManager = new BazaarManager();
         final BazaarBagFactory bagFactory = new BazaarBagFactory();
         final MMOBazaarAPI api = new MMOBazaarAPI(bagFactory);
         final GUISessionManager guiSessions = new GUISessionManager();

@@ -1,9 +1,12 @@
 package io.github.revise0x.mmobazaar.listener;
 
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
+import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import io.github.revise0x.mmobazaar.bazaar.BazaarListing;
 import io.github.revise0x.mmobazaar.gui.BazaarOwnerGUI;
+import io.github.revise0x.mmobazaar.gui.ConfirmPurchaseGUI;
 import net.wesjd.anvilgui.AnvilGUI;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -28,6 +31,85 @@ public class BazaarGUIListener implements Listener {
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
+        context.guiSessions.getConfirming(player.getUniqueId()).ifPresent(gui -> {
+            event.setCancelled(true);
+            int slot = event.getRawSlot();
+
+            switch (slot) {
+                case 3 -> { // Confirm purchase
+                    double price = gui.getListing().getPrice();
+                    if (!context.vaultHook.getEconomy().has(player, price)) {
+                        player.sendMessage("§cYou don’t have enough money.");
+                        player.closeInventory();
+                        context.guiSessions.removeConfirming(player.getUniqueId());
+                        return;
+                    }
+
+                    ItemStack item = gui.getListing().getItem().clone();
+                    HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(item);
+                    if (!leftover.isEmpty()) {
+                        player.sendMessage("§cNot enough inventory space.");
+                        player.closeInventory();
+                        context.guiSessions.removeConfirming(player.getUniqueId());
+                        return;
+                    }
+
+                    BazaarData data = gui.getData();
+                    BazaarListing current = data.getListings().get(gui.getSlot());
+                    if (current == null || !current.getItem().isSimilar(gui.getListing().getItem())) {
+                        player.sendMessage("§cThis item is no longer available.");
+                        player.closeInventory();
+                        context.guiSessions.removeConfirming(player.getUniqueId());
+                        return;
+                    }
+
+                    // 1. Remove listing
+                    data.removeListing(gui.getSlot());
+
+                    // 2. Vault transfer
+                    context.vaultHook.getEconomy().withdrawPlayer(player, price);
+                    data.deposit(price);
+
+                    // 3. Notify
+                    player.sendMessage("§aYou bought the item for §f$" + price + "§a.");
+                    Player owner = Bukkit.getPlayer(data.getOwner());
+                    if (owner != null) owner.sendMessage("§aSomeone bought an item from your bazaar.");
+
+                    // 4. Close and cleanup
+                    player.closeInventory();
+                    context.guiSessions.removeConfirming(player.getUniqueId());
+                }
+
+                case 5 -> { // Cancel
+                    player.sendMessage("§7Purchase cancelled.");
+                    player.closeInventory();
+                    context.guiSessions.removeConfirming(player.getUniqueId());
+                }
+            }
+        });
+        context.guiSessions.getCustomerGUI(player.getUniqueId()).ifPresent(gui -> {
+            event.setCancelled(true);
+
+            int slot = event.getRawSlot();
+            BazaarListing listing = gui.data().getListings().get(slot);
+            if (listing == null) return;
+
+            ItemStack clicked = event.getCurrentItem();
+            if (clicked == null || clicked.getType().isAir()) return;
+
+            ItemStack original = listing.getItem();
+
+            // Security check: must match listing item
+            if (!clicked.isSimilar(original)) {
+                player.sendMessage("§cThis item does not match the listing. Please reopen the shop.");
+                player.closeInventory();
+                context.guiSessions.removeCustomerGUI(player.getUniqueId());
+                return;
+            }
+
+            // Open confirmation GUI
+            new ConfirmPurchaseGUI(context, gui.data(), listing, slot).open(player);
+        });
         context.guiSessions.getOwnerGUI(player.getUniqueId()).ifPresent(gui -> {
             Inventory clicked = event.getClickedInventory();
             if (clicked == null) return;
@@ -126,5 +208,6 @@ public class BazaarGUIListener implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         context.guiSessions.removeOwnerGUI(event.getPlayer().getUniqueId());
+        context.guiSessions.removeCustomerGUI(event.getPlayer().getUniqueId());
     }
 }
