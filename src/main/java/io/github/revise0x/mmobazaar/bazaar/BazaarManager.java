@@ -54,7 +54,7 @@ public class BazaarManager {
         if (isTooClose(data.getLocation(), 2.5)) return false;
 
         // 1. Armor Stand
-        ArmorStand stand = world.spawn(baseLoc.clone(), ArmorStand.class);
+        ArmorStand stand = world.spawn(baseLoc.clone().add(0, -1.25, 0), ArmorStand.class);
         stand.setVisible(false);
         stand.setGravity(false);
         stand.setMarker(true);
@@ -65,7 +65,7 @@ public class BazaarManager {
         stand.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
 
         // 2. Hologram 1 – Bazaar name
-        ArmorStand nameLine = world.spawn(baseLoc.clone().add(0, 1.15, 0), ArmorStand.class);
+        ArmorStand nameLine = world.spawn(baseLoc.clone().add(0, 1.20, 0), ArmorStand.class);
         nameLine.setCustomName("§6" + data.getName());
         nameLine.setCustomNameVisible(true);
         nameLine.setVisible(false);
@@ -75,7 +75,7 @@ public class BazaarManager {
         nameLine.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
 
         // 3. Hologram 2 – Owner
-        ArmorStand ownerLine = world.spawn(baseLoc.clone().add(0, 1.00, 0), ArmorStand.class);
+        ArmorStand ownerLine = world.spawn(baseLoc.clone().add(0, 1, 0), ArmorStand.class);
         ownerLine.setCustomName("§7" + Bukkit.getOfflinePlayer(data.getOwner()).getName());
         ownerLine.setCustomNameVisible(true);
         ownerLine.setVisible(false);

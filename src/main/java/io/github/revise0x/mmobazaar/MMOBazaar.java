@@ -36,19 +36,16 @@ public class MMOBazaar extends JavaPlugin {
 
         // Setup MMOBazaar
         final BazaarManager bazaarManager = new BazaarManager();
-        final BazaarBagFactory bagFactory = new BazaarBagFactory();
+        final BazaarBagFactory bagFactory = new BazaarBagFactory(creationCost);
         final MMOBazaarAPI api = new MMOBazaarAPI(bagFactory);
         final GUISessionManager guiSessions = new GUISessionManager();
 
         // Setup context bundle for easier access to MMOBazaar
         final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions);
 
-        // Prepare static GUIs
-        final BazaarCreateGUI createGUI = new BazaarCreateGUI(context);
-
         // Register listeners
         final PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(new BazaarBagUseListener(context, createGUI), this);
+        pm.registerEvents(new BazaarBagUseListener(context), this);
         pm.registerEvents(new BazaarInteractionListener(context), this);
         pm.registerEvents(new BazaarGUIListener(context), this);
 
