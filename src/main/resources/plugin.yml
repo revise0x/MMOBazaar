@@ -1,5 +1,5 @@
 name: MMOBazaar
-version: 1.0.0
+version: 0.1.0
 main: io.github.revise0x.mmobazaar.MMOBazaar
 api-version: 1.13
 author: REVISE
