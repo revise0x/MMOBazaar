@@ -5,6 +5,7 @@ import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
@@ -33,12 +34,13 @@ public class BazaarManager {
         BazaarData data = bazaars.remove(bazaarId);
         if (data == null) return;
 
-        getArmorStandForBazaar(data).ifPresent(stand -> {
-            String id = data.getId().toString();
-            stand.remove();
-
-            World world = stand.getWorld();
-            world.getNearbyEntities(stand.getLocation().clone().add(0, 1.2, 0), 0.5, 0.5, 0.5).stream().filter(e -> e instanceof ArmorStand).map(e -> (ArmorStand) e).filter(holo -> id.equals(holo.getPersistentDataContainer().get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING))).forEach(Entity::remove);
+        getArmorStandForBazaar(data).ifPresent(head -> {
+            for (ArmorStand stand : head.getWorld().getEntitiesByClass(ArmorStand.class)) {
+                String rawId = stand.getPersistentDataContainer().get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING);
+                if (rawId != null && rawId.equals(bazaarId.toString())) {
+                    stand.remove();
+                }
+            }
         });
     }
 
@@ -53,15 +55,16 @@ public class BazaarManager {
 
         if (isTooClose(data.getLocation(), 2.5)) return false;
 
-        // 1. Armor Stand
+        // 1. Bazaar
         ArmorStand stand = world.spawn(baseLoc.clone().add(0, -1.25, 0), ArmorStand.class);
         stand.setVisible(false);
         stand.setGravity(false);
-        stand.setMarker(true);
+        stand.setMarker(false);
         stand.setBasePlate(false);
         stand.setInvulnerable(true);
         Objects.requireNonNull(stand.getEquipment()).setHelmet(new ItemStack(Material.CHEST));
         stand.setHeadPose(new EulerAngle(0, 0, 0));
+        stand.addEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
         stand.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
 
         // 2. Hologram 1 – Bazaar name

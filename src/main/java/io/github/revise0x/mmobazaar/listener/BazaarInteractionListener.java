@@ -23,12 +23,8 @@ public class BazaarInteractionListener implements Listener {
 
     @EventHandler
     public void onInteract(PlayerInteractAtEntityEvent event) {
-        System.out.println("Debug 0");
-
         if (!(event.getRightClicked() instanceof ArmorStand stand)) return;
-        if (stand.getEquipment() != null) return; // Interact only with the chest
-
-        System.out.println("Debug 1");
+        if (stand.getEquipment() == null) return; // Interact only with the chest
 
         PersistentDataContainer pdc = stand.getPersistentDataContainer();
         String rawId = pdc.get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING);
@@ -37,8 +33,6 @@ public class BazaarInteractionListener implements Listener {
         BazaarData bazaar = context.bazaarManager.getBazaar(bazaarId);
 
         if (bazaar == null) return;
-
-        System.out.println("Debug 2");
 
         event.setCancelled(true);
 

@@ -3,6 +3,7 @@ package io.github.revise0x.mmobazaar.gui;
 import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
 import io.github.revise0x.mmobazaar.bazaar.BazaarListing;
+import io.github.revise0x.mmobazaar.util.ListingLoreUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -11,6 +12,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,8 +33,14 @@ public class BazaarOwnerGUI {
 
         // Listings 0–26
         for (int slot = 0; slot <= 26; slot++) {
-            if (data.getListings().containsKey(slot)) {
-                gui.setItem(slot, data.getListings().get(slot).getItem());
+            BazaarListing listing = data.getListings().get(slot);
+            if (listing != null) {
+                ItemStack item = ListingLoreUtil.withOwnerLore(
+                        listing.getItem(),
+                        listing.getPrice(),
+                        Bukkit.getOfflinePlayer(data.getOwner()).getName()
+                );
+                gui.setItem(slot, item);
             }
         }
 
@@ -48,10 +56,9 @@ public class BazaarOwnerGUI {
         }
 
         // Buttons
-        gui.setItem(30, makeButton(Material.GOLD_INGOT, "§6Withdraw Earnings", "§7Click to withdraw all money"));
+        updateBankButton(gui);
         gui.setItem(31, makeButton(Material.BARRIER, "§cDelete Bazaar", "§7Removes the bazaar and refunds items"));
-        long millisLeft = data.getExpiresAt() - System.currentTimeMillis();
-        gui.setItem(32, makeButton(Material.CLOCK, "§eTime Left: " + formatTime(millisLeft), "§7Click to extend by 1 day for $1000"));
+        updateTimeLeftButton(gui);
         gui.setItem(35, makeButton(Material.COMPASS, "§bRotate Bazaar", "§7Click to rotate stand 15°"));
 
         player.openInventory(gui);
@@ -65,8 +72,8 @@ public class BazaarOwnerGUI {
             case 30 -> {
                 double withdrawn = data.withdrawAll();
                 context.vaultHook.getEconomy().depositPlayer(player, withdrawn);
+                updateBankButton(event.getClickedInventory());
                 player.sendMessage("§aWithdrawn §f$" + withdrawn + "§a to your balance.");
-                open(player);
             }
             case 31 -> {
                 // This is to prevent visual bugs as a safeguard, shouldn't matter
@@ -101,11 +108,11 @@ public class BazaarOwnerGUI {
                 boolean extended = data.extendExpiration(86400000);
                 if (extended) {
                     context.vaultHook.getEconomy().withdrawPlayer(player, 1000.0);
+                    updateTimeLeftButton(event.getClickedInventory());
                     player.sendMessage("§aExtended bazaar by 1 day for §f$1000.");
                 } else {
                     player.sendMessage("§eYou can't extend beyond 2 days from now.");
                 }
-                open(player);
             }
             case 35 -> {
                 if (context.bazaarManager.rotateBazaar(data, 15.0f)) player.sendMessage("§bBazaar rotated!");
@@ -130,6 +137,34 @@ public class BazaarOwnerGUI {
         long hours = (seconds / 3600) % 24;
         long days = seconds / 86400;
         return days + "d " + hours + "h " + minutes + "m";
+    }
+
+    private void updateBankButton(Inventory gui) {
+        ItemStack bank = new ItemStack(Material.GOLD_INGOT);
+        ItemMeta meta = bank.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§6Bazaar Bank");
+            List<String> lore = new ArrayList<>();
+            lore.add("§7Currently: §f$" + data.getBankBalance());
+            lore.add("§eClick to withdraw money from your bazaar");
+            meta.setLore(lore);
+            bank.setItemMeta(meta);
+        }
+        gui.setItem(30, bank);
+    }
+
+    private void updateTimeLeftButton(Inventory gui) {
+        ItemStack clock = new ItemStack(Material.CLOCK);
+        ItemMeta meta = clock.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName("§6Time Left");
+            List<String> lore = new ArrayList<>();
+            lore.add("§7" + formatTime(data.getExpiresAt() - System.currentTimeMillis()));
+            lore.add("§eClick to extend for §f$" + context.creationCost);
+            meta.setLore(lore);
+            clock.setItemMeta(meta);
+        }
+        gui.setItem(32, clock);
     }
 
     public BazaarData getData() {

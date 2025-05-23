@@ -55,7 +55,6 @@ public class BazaarCreateGUI {
                 completed.add(player.getUniqueId());
                 bag.setAmount(bag.getAmount() - 1);
                 player.sendMessage("§aBazaar created and §f$" + context.creationCost + " §awithdrawn.");
-                new BazaarOwnerGUI(context, data).open(player);
             }), AnvilGUI.ResponseAction.close())).orElseGet(() -> {
                 player.sendMessage("§cFailed to create bazaar.");
                 return List.of(AnvilGUI.ResponseAction.close());

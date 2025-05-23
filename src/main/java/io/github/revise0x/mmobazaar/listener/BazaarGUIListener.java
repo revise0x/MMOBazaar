@@ -5,6 +5,7 @@ import io.github.revise0x.mmobazaar.bazaar.BazaarData;
 import io.github.revise0x.mmobazaar.bazaar.BazaarListing;
 import io.github.revise0x.mmobazaar.gui.BazaarOwnerGUI;
 import io.github.revise0x.mmobazaar.gui.ConfirmPurchaseGUI;
+import io.github.revise0x.mmobazaar.util.ListingLoreUtil;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -14,6 +15,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
@@ -115,12 +117,27 @@ public class BazaarGUIListener implements Listener {
             if (clicked == null) return;
 
             // Soft check in case another inventory event
-            if (ChatColor.stripColor(event.getView().getTitle()).equalsIgnoreCase(gui.getData().getName())) {
+            if (!ChatColor.stripColor(event.getView().getTitle()).equalsIgnoreCase(gui.getData().getName())) {
                 context.guiSessions.removeOwnerGUI(player.getUniqueId());
                 return;
             }
 
             int slot = event.getRawSlot();
+
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                return;
+            }
+
+            switch (event.getAction()) {
+                case PICKUP_ALL, PICKUP_HALF, PLACE_ALL, PLACE_SOME, PLACE_ONE -> {} // ✅ allow
+                default -> {
+                    event.setCancelled(true); // ❌ block everything else
+                    return;
+                }
+            }
+
+            if (clicked == event.getView().getBottomInventory()) return;
 
             // Modify listings: between 0–26 slots
             if (slot >= 0 && slot <= 26 && clicked.equals(event.getView().getTopInventory())) {
@@ -131,7 +148,7 @@ public class BazaarGUIListener implements Listener {
                     ItemStack droppedItem = cursor.clone();
                     player.setItemOnCursor(null); // Remove item on cursor to prevent duplication
 
-                    openListingPrompt(player, droppedItem, slot, gui);
+                    openListingPrompt(player, clicked, droppedItem, slot, gui);
                     return;
                 }
 
@@ -143,6 +160,7 @@ public class BazaarGUIListener implements Listener {
                     if (event.getClick().isLeftClick()) {
                         openEditPrompt(player, slot, existing, gui);
                     } else if (event.getClick().isRightClick()) {
+                        event.getClickedInventory().setItem(slot, new ItemStack(Material.AIR));
                         gui.getData().removeListing(slot);
                         player.sendMessage("§cListing removed.");
 
@@ -150,8 +168,6 @@ public class BazaarGUIListener implements Listener {
                         for (ItemStack item : leftovers.values()) {
                             player.getWorld().dropItemNaturally(player.getLocation(), item);
                         }
-
-                        gui.open(player); // Refresh GUI
                     }
                     return;
                 }
@@ -162,13 +178,14 @@ public class BazaarGUIListener implements Listener {
         });
     }
 
-    private void openListingPrompt(Player player, ItemStack item, int slot, BazaarOwnerGUI gui) {
+    private void openListingPrompt(Player player, Inventory inventory, ItemStack item, int slot, BazaarOwnerGUI gui) {
         new AnvilGUI.Builder().onClick((_s, stateSnapshot) -> {
             try {
                 double price = Double.parseDouble(stateSnapshot.getText());
                 if (price <= 0) throw new NumberFormatException();
 
-                gui.getData().addListing(slot, item, price);
+                gui.getData().addListing(slot, item.clone(), price);
+                inventory.setItem(slot, ListingLoreUtil.withOwnerLore(item, price, Bukkit.getOfflinePlayer(gui.getData().getOwner()).getName()));
                 player.sendMessage("§aItem listed for §f$" + price);
             } catch (NumberFormatException e) {
                 player.sendMessage("§cInvalid price.");
@@ -206,8 +223,32 @@ public class BazaarGUIListener implements Listener {
     }
 
     @EventHandler
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        context.guiSessions.getOwnerGUI(player.getUniqueId()).ifPresent(gui -> {
+            System.out.println(ChatColor.stripColor(event.getView().getTitle()));
+            System.out.println(gui.getData().getName());
+            // Soft check in case another inventory event
+            if (!ChatColor.stripColor(event.getView().getTitle()).equalsIgnoreCase(gui.getData().getName())) {
+                context.guiSessions.removeOwnerGUI(player.getUniqueId());
+                return;
+            }
+
+            int topSize = event.getView().getTopInventory().getSize();
+
+            // Cancel only if drag STARTED from top inventory (listing area)
+            if (event.getInventorySlots().stream().anyMatch(slot -> slot < topSize)) {
+                event.setCancelled(true);
+            }
+        });
+    }
+
+
+    @EventHandler
     public void onClose(InventoryCloseEvent event) {
         context.guiSessions.removeOwnerGUI(event.getPlayer().getUniqueId());
         context.guiSessions.removeCustomerGUI(event.getPlayer().getUniqueId());
+        context.guiSessions.removeConfirming(event.getPlayer().getUniqueId());
     }
 }
