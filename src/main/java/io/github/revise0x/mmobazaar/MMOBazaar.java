@@ -14,8 +14,11 @@ import io.github.revise0x.mmobazaar.listener.BazaarInteractionListener;
 import io.github.revise0x.mmobazaar.listener.BazaarGUIListener;
 import io.github.revise0x.mmobazaar.storage.BazaarStorage;
 import io.github.revise0x.mmobazaar.storage.StorageFactory;
+import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -90,6 +93,15 @@ public class MMOBazaar extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Close all GUIs in case it is a reload to prevent item dupe. Rare but dangerous one
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Inventory openInv = player.getOpenInventory().getTopInventory();
+            if (context.guiSessions.getOwnerGUI(player.getUniqueId()).isPresent() || context.guiSessions.getConfirmingGUI(player.getUniqueId()).isPresent() || context.guiSessions.getCustomerGUI(player.getUniqueId()).isPresent()) {
+                player.closeInventory();
+                player.sendMessage("§cBazaar GUI was forcibly closed due to reload.");
+            }
+        }
+
         // Save all bazaars in case
         if (this.context != null && this.context.storage != null) {
             try {
