@@ -47,7 +47,7 @@ public class BazaarData {
         this.ownerStandId = ownerStandId;
     }
 
-    private final Map<Integer, BazaarListing> listings = new HashMap<>();
+    private final Map<Integer, BazaarListing> listings;
 
     public BazaarData(UUID id, UUID owner, String name, Location location) {
         this.id = id;
@@ -56,6 +56,24 @@ public class BazaarData {
         this.location = location;
         this.createdAt = System.currentTimeMillis();
         this.expiresAt = this.createdAt + TimeUnit.DAYS.toMillis(1); // default 1 day
+        this.listings = new HashMap<>();
+    }
+
+    public BazaarData(UUID bazaarId, UUID owner, String name, Location location,
+                      long createdAt, long expiresAt, boolean closed, double bank,
+                      Map<Integer, BazaarListing> listings, UUID stand, UUID nameStand, UUID ownerStand) {
+        this.id = bazaarId;
+        this.owner = owner;
+        this.name = name;
+        this.location = location;
+        this.createdAt = createdAt;
+        this.expiresAt = expiresAt;
+        this.closed = closed;
+        this.bankBalance = bank;
+        this.listings = listings;
+        this.visualStandId = stand;
+        this.nameStandId = nameStand;
+        this.ownerStandId = ownerStand;
     }
 
     public boolean isClosed() {
@@ -126,7 +144,7 @@ public class BazaarData {
     }
 
     public void addListing(int slot, ItemStack item, double price) {
-        listings.put(slot, new BazaarListing(item, price));
+        listings.put(slot, new BazaarListing(item, price, slot));
     }
 
     public void removeListing(int slot) {
@@ -137,7 +155,7 @@ public class BazaarData {
         BazaarListing current = listings.get(slot);
         if (current == null) return false;
 
-        listings.put(slot, new BazaarListing(current.getItem(), newPrice));
+        listings.put(slot, new BazaarListing(current.getItem(), newPrice, slot));
         return true;
     }
 }

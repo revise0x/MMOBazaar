@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class BazaarManager {
-    // This UUID is Bazaar's own UUID.
+    // The key UUID is Bazaar's own UUID.
     private final Map<UUID, BazaarData> bazaars = new HashMap<>();
 
     public Optional<BazaarData> createBazaar(Player player, String name) {
@@ -24,11 +24,14 @@ public class BazaarManager {
             return Optional.empty();
         }
 
-        // Registers bazaar
-        bazaars.put(data.getId(), data);
+        registerBazaar(data);
 
         player.sendMessage("§aBazaar created: §f" + name);
         return Optional.of(data);
+    }
+
+    public void registerBazaar(BazaarData bazaar) {
+        bazaars.put(bazaar.getId(), bazaar);
     }
 
     public void removeBazaar(UUID bazaarId) {

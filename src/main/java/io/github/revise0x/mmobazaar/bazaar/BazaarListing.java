@@ -6,11 +6,17 @@ public class BazaarListing {
     private final ItemStack item;
     private final double price;
     private final long timestamp; // when listed, for sorting later
+    private final int slot;
 
-    public BazaarListing(ItemStack item, double price) {
+    public BazaarListing(ItemStack item, double price, int slot) {
         this.item = item;
         this.price = price;
+        this.slot = slot;
         this.timestamp = System.currentTimeMillis();
+    }
+
+    public int getSlot() {
+        return slot;
     }
 
     public ItemStack getItem() {
@@ -26,6 +32,6 @@ public class BazaarListing {
     }
 
     public BazaarListing withPrice(double newPrice) {
-        return new BazaarListing(item, newPrice);
+        return new BazaarListing(item, newPrice, slot);
     }
 }

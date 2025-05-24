@@ -1,13 +1,13 @@
-package io.github.revise0x.mmobazaar;
+package io.github.revise0x.mmobazaar.config;
 
 import org.bukkit.configuration.file.FileConfiguration;
 
-public class MMOBazaarConfig {
-    private int maxBazaarsPerPlayer;
-    private double creationFee;
-    private double extensionFee;
+public class BazaarConfig {
+    private final int maxBazaarsPerPlayer;
+    private final double creationFee;
+    private final double extensionFee;
 
-    public void load(FileConfiguration config) {
+    public BazaarConfig(FileConfiguration config) {
         this.maxBazaarsPerPlayer = config.getInt("bazaar.max-per-player", 3);
         this.creationFee = config.getDouble("bazaar.creation-fee", 1000.0);
         this.extensionFee = config.getDouble("bazaar.extension-fee", 1000.0);
