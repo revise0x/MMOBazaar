@@ -15,9 +15,9 @@ public class BazaarBagFactory {
     private final int customModelData;
     private final Material baseMaterial;
 
-    public BazaarBagFactory(double creationCost) {
+    public BazaarBagFactory(double extensionFee) {
         // TODO Multi-language support in future
-        this.creationCost = creationCost;
+        this.creationCost = extensionFee;
         this.displayName = "§6Bazaar Bag";
         this.lore = List.of("§7Right-click to open your shop.");
         this.customModelData = 7001;

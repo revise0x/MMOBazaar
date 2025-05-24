@@ -1,2 +1,4 @@
 bazaar:
   max-per-player: 3
+  creation-fee: 1000.0
+  extension-fee: 1000.0

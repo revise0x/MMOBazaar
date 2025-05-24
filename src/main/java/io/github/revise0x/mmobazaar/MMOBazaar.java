@@ -36,17 +36,14 @@ public class MMOBazaar extends JavaPlugin {
             return;
         }
 
-        // Setup variables, TODO Change with config in future
-        final double creationCost = 1000.0;
-
         // Setup MMOBazaar
         final BazaarManager bazaarManager = new BazaarManager();
-        final BazaarBagFactory bagFactory = new BazaarBagFactory(creationCost);
+        final BazaarBagFactory bagFactory = new BazaarBagFactory(config.getCreationFee());
         final MMOBazaarAPI api = new MMOBazaarAPI(bagFactory);
         final GUISessionManager guiSessions = new GUISessionManager();
 
         // Setup context bundle for easier access to MMOBazaar
-        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions, config);
+        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, api, guiSessions, config);
 
         // Register listeners
         final PluginManager pm = getServer().getPluginManager();

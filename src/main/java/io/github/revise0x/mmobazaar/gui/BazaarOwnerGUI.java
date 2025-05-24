@@ -102,16 +102,17 @@ public class BazaarOwnerGUI {
             }
             case 32 -> {
                 double balance = context.vaultHook.getEconomy().getBalance(player);
-                if (balance < context.creationCost) {
+                double extensionFee = context.config.getExtensionFee();
+                if (balance < extensionFee) {
                     player.sendMessage("§cYou don’t have enough money to extend your bazaar.");
                     return;
                 }
 
                 boolean extended = data.extendExpiration(86400000);
                 if (extended) {
-                    context.vaultHook.getEconomy().withdrawPlayer(player, 1000.0);
+                    context.vaultHook.getEconomy().withdrawPlayer(player, extensionFee);
                     updateTimeLeftButton(event.getClickedInventory());
-                    player.sendMessage("§aExtended bazaar by 1 day for §f$1000.");
+                    player.sendMessage("§aExtended bazaar by 1 day for §f" + extensionFee);
                 } else {
                     player.sendMessage("§eYou can't extend beyond 2 days from now.");
                 }
@@ -162,7 +163,7 @@ public class BazaarOwnerGUI {
             meta.setDisplayName("§6Time Left");
             List<String> lore = new ArrayList<>();
             lore.add("§7" + formatTime(data.getExpiresAt() - System.currentTimeMillis()));
-            lore.add("§eClick to extend for §f$" + context.creationCost);
+            lore.add("§eClick to extend for §f$" + context.config.getExtensionFee());
             meta.setLore(lore);
             clock.setItemMeta(meta);
         }

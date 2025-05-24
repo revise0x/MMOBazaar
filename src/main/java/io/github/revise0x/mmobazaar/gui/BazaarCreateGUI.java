@@ -35,8 +35,9 @@ public class BazaarCreateGUI {
             }
 
             double balance = context.vaultHook.getEconomy().getBalance(player);
-            if (balance < context.creationCost) {
-                player.sendMessage("§cYou need at least §f$" + context.creationCost + " §cto open a bazaar.");
+            double creationFee = context.config.getCreationFee();
+            if (balance < creationFee) {
+                player.sendMessage("§cYou need at least §f$" + creationFee + " §cto open a bazaar.");
                 return List.of(AnvilGUI.ResponseAction.close());
             }
 
@@ -51,7 +52,7 @@ public class BazaarCreateGUI {
                 return List.of(AnvilGUI.ResponseAction.close());
             }
 
-            EconomyResponse withdraw = context.vaultHook.getEconomy().withdrawPlayer(player, context.creationCost);
+            EconomyResponse withdraw = context.vaultHook.getEconomy().withdrawPlayer(player, creationFee);
             if (!withdraw.transactionSuccess()) {
                 player.sendMessage("§cTransaction failed, check your funds");
                 return List.of(AnvilGUI.ResponseAction.close());
@@ -60,7 +61,7 @@ public class BazaarCreateGUI {
             return context.bazaarManager.createBazaar(player, name).map(data -> List.of(AnvilGUI.ResponseAction.run(() -> {
                 completed.add(player.getUniqueId());
                 bag.setAmount(bag.getAmount() - 1);
-                player.sendMessage("§aBazaar created and §f$" + context.creationCost + " §awithdrawn.");
+                player.sendMessage("§aBazaar created and §f$" + creationFee + " §awithdrawn.");
             }), AnvilGUI.ResponseAction.close())).orElseGet(() -> {
                 player.sendMessage("§cFailed to create bazaar.");
                 return List.of(AnvilGUI.ResponseAction.close());
