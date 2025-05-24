@@ -2,6 +2,7 @@ package io.github.revise0x.mmobazaar.listener;
 
 import io.github.revise0x.mmobazaar.MMOBazaarContext;
 import io.github.revise0x.mmobazaar.gui.BazaarCreateGUI;
+import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,6 +10,8 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 public class BazaarBagUseListener implements Listener {
     private final MMOBazaarContext context;
@@ -33,6 +36,12 @@ public class BazaarBagUseListener implements Listener {
             double balance = context.vaultHook.getEconomy().getBalance(player);
             if (balance < context.creationCost) {
                 player.sendMessage("§cYou need at least §f$" + context.creationCost + " §cto open a bazaar.");
+                return;
+            }
+
+            int bazaarAmount = context.bazaarManager.getBazaarsByOwner(player.getUniqueId()).size();
+            if (bazaarAmount >= context.config.getMaxBazaarsPerPlayer()) {
+                player.sendMessage("§cYou cannot have more than " + bazaarAmount + " bazaars.");
                 return;
             }
 

@@ -11,8 +11,10 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BazaarManager {
+    // This UUID is Bazaar's own UUID.
     private final Map<UUID, BazaarData> bazaars = new HashMap<>();
 
     public Optional<BazaarData> createBazaar(Player player, String name) {
@@ -38,8 +40,14 @@ public class BazaarManager {
         getEntity(data.getNameStandId()).ifPresent(Entity::remove);
     }
 
-    public BazaarData getBazaar(UUID id) {
-        return bazaars.get(id);
+    public Set<BazaarData> getBazaarsByOwner(UUID playerId) {
+        return bazaars.values().stream()
+                .filter(bazaar -> bazaar.getOwner().equals(playerId))
+                .collect(Collectors.toSet());
+    }
+
+    public BazaarData getBazaar(UUID bazaarId) {
+        return bazaars.get(bazaarId);
     }
 
     private boolean spawnBazaar(BazaarData data) {

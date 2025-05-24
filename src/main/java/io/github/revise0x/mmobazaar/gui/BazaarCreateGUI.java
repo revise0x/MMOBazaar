@@ -45,6 +45,12 @@ public class BazaarCreateGUI {
                 return List.of(AnvilGUI.ResponseAction.close());
             }
 
+            int bazaarAmount = context.bazaarManager.getBazaarsByOwner(player.getUniqueId()).size();
+            if (bazaarAmount >= context.config.getMaxBazaarsPerPlayer()) {
+                player.sendMessage("§cYou cannot have more than " + bazaarAmount + " bazaars.");
+                return List.of(AnvilGUI.ResponseAction.close());
+            }
+
             EconomyResponse withdraw = context.vaultHook.getEconomy().withdrawPlayer(player, context.creationCost);
             if (!withdraw.transactionSuccess()) {
                 player.sendMessage("§cTransaction failed, check your funds");

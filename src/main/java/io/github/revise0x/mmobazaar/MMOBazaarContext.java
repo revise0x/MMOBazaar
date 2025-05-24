@@ -14,8 +14,9 @@ public class MMOBazaarContext {
     public final double creationCost;
     public final MMOBazaarAPI api;
     public final GUISessionManager guiSessions;
+    public final MMOBazaarConfig config;
 
-    public MMOBazaarContext(MMOBazaar plugin, VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, double creationCost, MMOBazaarAPI api, GUISessionManager guiSessions) {
+    public MMOBazaarContext(MMOBazaar plugin, VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, double creationCost, MMOBazaarAPI api, GUISessionManager guiSessions, MMOBazaarConfig config) {
         this.plugin = plugin;
         this.vaultHook = vaultHook;
         this.bazaarManager = manager;
@@ -23,5 +24,6 @@ public class MMOBazaarContext {
         this.creationCost = creationCost;
         this.api = api;
         this.guiSessions = guiSessions;
+        this.config = config;
     }
 }

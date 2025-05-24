@@ -4,7 +4,6 @@ import io.github.revise0x.mmobazaar.api.MMOBazaarAPI;
 import io.github.revise0x.mmobazaar.bazaar.BazaarManager;
 import io.github.revise0x.mmobazaar.commands.MMOBazaarCommand;
 import io.github.revise0x.mmobazaar.economy.VaultHook;
-import io.github.revise0x.mmobazaar.gui.BazaarCreateGUI;
 import io.github.revise0x.mmobazaar.gui.GUISessionManager;
 import io.github.revise0x.mmobazaar.item.BazaarBagFactory;
 import io.github.revise0x.mmobazaar.listener.BazaarBagUseListener;
@@ -22,6 +21,12 @@ public class MMOBazaar extends JavaPlugin {
     @Override
     public void onEnable() {
         BAZAAR_ID_KEY = new NamespacedKey(this, "bazaar-id");
+
+        // Configuration
+        final MMOBazaarConfig config;
+        saveDefaultConfig();
+        config = new MMOBazaarConfig();
+        config.load(getConfig());
 
         // Vault Integration
         final VaultHook vaultHook = new VaultHook();
@@ -41,7 +46,7 @@ public class MMOBazaar extends JavaPlugin {
         final GUISessionManager guiSessions = new GUISessionManager();
 
         // Setup context bundle for easier access to MMOBazaar
-        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions);
+        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, creationCost, api, guiSessions, config);
 
         // Register listeners
         final PluginManager pm = getServer().getPluginManager();
