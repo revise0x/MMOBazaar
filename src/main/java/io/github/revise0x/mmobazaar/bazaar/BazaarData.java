@@ -18,6 +18,35 @@ public class BazaarData {
     private double bankBalance = 0.0;
     private boolean closed = false;
 
+    // These are UUIDs of armor stand entities to remove/control them easily
+    private UUID visualStandId;
+    private UUID nameStandId;
+    private UUID ownerStandId;
+
+    public UUID getVisualStandId() {
+        return visualStandId;
+    }
+
+    public void setVisualStandId(UUID visualStandId) {
+        this.visualStandId = visualStandId;
+    }
+
+    public UUID getNameStandId() {
+        return nameStandId;
+    }
+
+    public void setNameStandId(UUID nameStandId) {
+        this.nameStandId = nameStandId;
+    }
+
+    public UUID getOwnerStandId() {
+        return ownerStandId;
+    }
+
+    public void setOwnerStandId(UUID ownerStandId) {
+        this.ownerStandId = ownerStandId;
+    }
+
     private final Map<Integer, BazaarListing> listings = new HashMap<>();
 
     public BazaarData(UUID id, UUID owner, String name, Location location) {

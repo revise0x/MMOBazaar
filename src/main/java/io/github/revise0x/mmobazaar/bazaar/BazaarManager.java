@@ -7,7 +7,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.EulerAngle;
 
@@ -34,14 +33,9 @@ public class BazaarManager {
         BazaarData data = bazaars.remove(bazaarId);
         if (data == null) return;
 
-        getArmorStandForBazaar(data).ifPresent(head -> {
-            for (ArmorStand stand : head.getWorld().getEntitiesByClass(ArmorStand.class)) {
-                String rawId = stand.getPersistentDataContainer().get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING);
-                if (rawId != null && rawId.equals(bazaarId.toString())) {
-                    stand.remove();
-                }
-            }
-        });
+        getEntity(data.getVisualStandId()).ifPresent(Entity::remove);
+        getEntity(data.getOwnerStandId()).ifPresent(Entity::remove);
+        getEntity(data.getNameStandId()).ifPresent(Entity::remove);
     }
 
     public BazaarData getBazaar(UUID id) {
@@ -66,6 +60,7 @@ public class BazaarManager {
         stand.setHeadPose(new EulerAngle(0, 0, 0));
         stand.addEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
         stand.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
+        data.setNameStandId(stand.getUniqueId());
 
         // 2. Hologram 1 – Bazaar name
         ArmorStand nameLine = world.spawn(baseLoc.clone().add(0, 1.20, 0), ArmorStand.class);
@@ -76,6 +71,7 @@ public class BazaarManager {
         nameLine.setMarker(true);
         nameLine.setInvulnerable(true);
         nameLine.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
+        data.setNameStandId(nameLine.getUniqueId());
 
         // 3. Hologram 2 – Owner
         ArmorStand ownerLine = world.spawn(baseLoc.clone().add(0, 1, 0), ArmorStand.class);
@@ -86,27 +82,24 @@ public class BazaarManager {
         ownerLine.setMarker(true);
         ownerLine.setInvulnerable(true);
         ownerLine.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
+        data.setOwnerStandId(ownerLine.getUniqueId());
 
         return true;
     }
 
-    public void updateVisual(BazaarData data) {
-        getArmorStandForBazaar(data).ifPresent(stand -> {
-            String id = data.getId().toString();
-            World world = stand.getWorld();
+    public Optional<Entity> getEntity(UUID id) {
+        return Optional.ofNullable(Bukkit.getEntity(id));
+    }
 
-            world.getNearbyEntities(stand.getLocation().clone().add(0, 1.2, 0), 0.5, 0.5, 0.5).stream().filter(e -> e instanceof ArmorStand).map(e -> (ArmorStand) e).filter(holo -> {
-                String match = holo.getPersistentDataContainer().get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING);
-                return id.equals(match) && !holo.equals(stand); // avoid changing main stand
-            }).forEach(holo -> {
-                String prefix = data.isClosed() ? "§c[CLOSED] §6" : "§6";
-                holo.setCustomName(prefix + data.getName());
-            });
+    public void updateBazaarDisplayName(BazaarData data) {
+        getEntity(data.getNameStandId()).ifPresent(entity -> {
+            String prefix = data.isClosed() ? "§c[CLOSED] §6" : "§6";
+            entity.setCustomName(prefix + data.getName());
         });
     }
 
     public boolean rotateBazaar(BazaarData data, float amount) {
-        return getArmorStandForBazaar(data).map(stand -> {
+        return getEntity(data.getVisualStandId()).map(stand -> {
             Location loc = stand.getLocation();
             float newYaw = loc.getYaw() + amount;
             if (newYaw >= 360.0f) newYaw -= 360.0f;
@@ -124,23 +117,5 @@ public class BazaarManager {
             }
         }
         return false;
-    }
-
-    public Optional<ArmorStand> getArmorStandForBazaar(BazaarData data) {
-        Location loc = data.getLocation();
-        World world = loc.getWorld();
-        if (world == null) return Optional.empty();
-
-        for (Entity entity : world.getNearbyEntities(loc, 1, 1, 1)) {
-            if (entity instanceof ArmorStand stand) {
-                PersistentDataContainer pdc = stand.getPersistentDataContainer();
-                String raw = pdc.get(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING);
-                if (raw != null && raw.equals(data.getId().toString())) {
-                    return Optional.of(stand);
-                }
-            }
-        }
-
-        return Optional.empty();
     }
 }
