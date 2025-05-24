@@ -90,7 +90,7 @@ public class BazaarGUIListener implements Listener {
                     context.vaultHook.getEconomy().withdrawPlayer(player, price);
                     data.deposit(price);
 
-                    // 2.5 Refresh GUI if owner looks at it to prevent visual bugs, dupe already prevented
+                    // 2.5 Refresh GUI if owner looks at it to prevent visual bugs
                     UUID ownerId = gui.getData().getOwner();
                     Player owner = Bukkit.getPlayer(ownerId);
                     if (owner != null) {
@@ -103,6 +103,9 @@ public class BazaarGUIListener implements Listener {
                     // 3. Notify
                     player.sendMessage("§aYou bought the item for §f$" + price + "§a.");
                     if (owner != null) owner.sendMessage("§aSomeone bought an item from your bazaar.");
+
+                    // 3.5 Update database
+                    Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(gui.getData()));
 
                     // 4. Close and cleanup
                     player.closeInventory();
@@ -174,6 +177,8 @@ public class BazaarGUIListener implements Listener {
                         event.getClickedInventory().setItem(slot, new ItemStack(Material.AIR));
                         gui.getData().removeListing(slot);
 
+                        Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(gui.getData()));
+
                         context.guiSessions.closeCustomerGUIsFor(gui.getData().getId());
                         context.guiSessions.closeConfirmingGUIsFor(gui.getData().getId());
 
@@ -201,6 +206,8 @@ public class BazaarGUIListener implements Listener {
 
                 gui.getData().addListing(slot, item.clone(), price);
                 inventory.setItem(slot, ListingLoreUtil.withOwnerLore(item, price, Bukkit.getOfflinePlayer(gui.getData().getOwner()).getName()));
+
+                Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(gui.getData()));
 
                 context.guiSessions.closeCustomerGUIsFor(gui.getData().getId());
                 context.guiSessions.closeConfirmingGUIsFor(gui.getData().getId());
@@ -236,6 +243,8 @@ public class BazaarGUIListener implements Listener {
 
                 boolean updated = gui.getData().changeListingPrice(slot, newPrice);
                 if (updated) {
+                    Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(gui.getData()));
+
                     context.guiSessions.closeCustomerGUIsFor(gui.getData().getId());
                     context.guiSessions.closeConfirmingGUIsFor(gui.getData().getId());
 

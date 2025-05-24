@@ -69,6 +69,9 @@ public class BazaarOwnerGUI {
                 double withdrawn = data.withdrawAll();
                 context.vaultHook.getEconomy().depositPlayer(player, withdrawn);
                 updateBankButton(event.getClickedInventory());
+
+                Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(data));
+
                 player.sendMessage("§aWithdrawn §f$" + withdrawn + "§a to your balance.");
             }
             case 31 -> {
@@ -97,6 +100,9 @@ public class BazaarOwnerGUI {
                 // Close inventory
                 player.closeInventory();
 
+                // Delete from database
+                Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.deleteBazaar(data.getId()));
+
                 // Clear GUI session
                 context.guiSessions.removeOwnerGUI(player.getUniqueId());
             }
@@ -112,13 +118,19 @@ public class BazaarOwnerGUI {
                 if (extended) {
                     context.vaultHook.getEconomy().withdrawPlayer(player, extensionFee);
                     updateTimeLeftButton(event.getClickedInventory());
+
+                    Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(data));
+
                     player.sendMessage("§aExtended bazaar by 1 day for §f" + extensionFee);
                 } else {
                     player.sendMessage("§eYou can't extend beyond 2 days from now.");
                 }
             }
             case 35 -> {
-                if (context.bazaarManager.rotateBazaar(data, 15.0f)) player.sendMessage("§bBazaar rotated!");
+                if (context.bazaarManager.rotateBazaar(data, 45.0f)) {
+                    Bukkit.getScheduler().runTaskAsynchronously(context.plugin, () -> context.storage.saveBazaar(data));
+                    player.sendMessage("§bBazaar rotated!");
+                }
             }
         }
     }

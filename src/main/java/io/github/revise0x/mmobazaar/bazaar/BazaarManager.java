@@ -1,6 +1,7 @@
 package io.github.revise0x.mmobazaar.bazaar;
 
 import io.github.revise0x.mmobazaar.MMOBazaar;
+import io.github.revise0x.mmobazaar.storage.BazaarStorage;
 import org.bukkit.*;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
@@ -8,12 +9,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.util.EulerAngle;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class BazaarManager {
+    private final JavaPlugin plugin;
+    private final BazaarStorage storage;
+
+    public BazaarManager(JavaPlugin plugin, BazaarStorage storage) {
+        this.plugin = plugin;
+        this.storage = storage;
+    }
+
     // The key UUID is Bazaar's own UUID.
     private final Map<UUID, BazaarData> bazaars = new HashMap<>();
 
@@ -25,6 +35,7 @@ public class BazaarManager {
         }
 
         registerBazaar(data);
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> storage.saveBazaar(data));
 
         player.sendMessage("§aBazaar created: §f" + name);
         return Optional.of(data);
@@ -44,9 +55,7 @@ public class BazaarManager {
     }
 
     public Set<BazaarData> getBazaarsByOwner(UUID playerId) {
-        return bazaars.values().stream()
-                .filter(bazaar -> bazaar.getOwner().equals(playerId))
-                .collect(Collectors.toSet());
+        return bazaars.values().stream().filter(bazaar -> bazaar.getOwner().equals(playerId)).collect(Collectors.toSet());
     }
 
     public BazaarData getBazaar(UUID bazaarId) {
@@ -71,7 +80,7 @@ public class BazaarManager {
         stand.setHeadPose(new EulerAngle(0, 0, 0));
         stand.addEquipmentLock(EquipmentSlot.HEAD, ArmorStand.LockType.REMOVING_OR_CHANGING);
         stand.getPersistentDataContainer().set(MMOBazaar.BAZAAR_ID_KEY, PersistentDataType.STRING, data.getId().toString());
-        data.setNameStandId(stand.getUniqueId());
+        data.setVisualStandId(stand.getUniqueId());
 
         // 2. Hologram 1 – Bazaar name
         ArmorStand nameLine = world.spawn(baseLoc.clone().add(0, 1.20, 0), ArmorStand.class);
@@ -128,5 +137,9 @@ public class BazaarManager {
             }
         }
         return false;
+    }
+
+    public Collection<BazaarData> getAllBazaars() {
+        return bazaars.values();
     }
 }

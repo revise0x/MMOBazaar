@@ -30,8 +30,4 @@ public class BazaarListing {
     public long getTimestamp() {
         return timestamp;
     }
-
-    public BazaarListing withPrice(double newPrice) {
-        return new BazaarListing(item, newPrice, slot);
-    }
 }

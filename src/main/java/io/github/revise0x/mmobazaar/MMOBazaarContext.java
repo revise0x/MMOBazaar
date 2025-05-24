@@ -6,6 +6,7 @@ import io.github.revise0x.mmobazaar.economy.VaultHook;
 import io.github.revise0x.mmobazaar.bazaar.BazaarManager;
 import io.github.revise0x.mmobazaar.gui.GUISessionManager;
 import io.github.revise0x.mmobazaar.item.BazaarBagFactory;
+import io.github.revise0x.mmobazaar.storage.BazaarStorage;
 
 public class MMOBazaarContext {
     public final MMOBazaar plugin;
@@ -15,8 +16,9 @@ public class MMOBazaarContext {
     public final MMOBazaarAPI api;
     public final GUISessionManager guiSessions;
     public final BazaarConfig config;
+    public final BazaarStorage storage;
 
-    public MMOBazaarContext(MMOBazaar plugin, VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, MMOBazaarAPI api, GUISessionManager guiSessions, BazaarConfig config) {
+    public MMOBazaarContext(MMOBazaar plugin, VaultHook vaultHook, BazaarManager manager, BazaarBagFactory bagFactory, MMOBazaarAPI api, GUISessionManager guiSessions, BazaarConfig config, BazaarStorage storage) {
         this.plugin = plugin;
         this.vaultHook = vaultHook;
         this.bazaarManager = manager;
@@ -24,5 +26,6 @@ public class MMOBazaarContext {
         this.api = api;
         this.guiSessions = guiSessions;
         this.config = config;
+        this.storage = storage;
     }
 }

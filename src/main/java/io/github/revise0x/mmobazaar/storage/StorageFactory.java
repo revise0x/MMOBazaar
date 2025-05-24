@@ -6,6 +6,8 @@ import io.github.revise0x.mmobazaar.config.StorageConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
+
 public class StorageFactory {
     private final JavaPlugin plugin;
 
@@ -16,9 +18,12 @@ public class StorageFactory {
     public BazaarStorage create(StorageConfig config) {
         switch (config.getEngine()) {
             case SQLITE -> {
+                plugin.getDataFolder().mkdirs();
                 String filePath = config.getSubSection().getString("file", "data.db");
+                File dbFile = new File(plugin.getDataFolder(), filePath);
+
                 HikariConfig hikari = new HikariConfig();
-                hikari.setJdbcUrl("jdbc:sqlite:" + filePath);
+                hikari.setJdbcUrl("jdbc:sqlite:" + dbFile.getAbsolutePath());
                 hikari.setPoolName("MMOBazaar-SQLite");
                 hikari.setMaximumPoolSize(10);
 

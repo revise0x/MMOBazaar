@@ -101,9 +101,9 @@ public class SQLiteStorage implements BazaarStorage {
             ps.setBoolean(11, data.isClosed());
             ps.setDouble(12, data.getBankBalance());
 
-            ps.setString(13, optionalToString(data.getVisualStandId()));
-            ps.setString(14, optionalToString(data.getNameStandId()));
-            ps.setString(15, optionalToString(data.getOwnerStandId()));
+            ps.setString(13, data.getVisualStandId().toString());
+            ps.setString(14, data.getNameStandId().toString());
+            ps.setString(15, data.getOwnerStandId().toString());
 
             ps.executeUpdate();
 
@@ -136,11 +136,6 @@ public class SQLiteStorage implements BazaarStorage {
             plugin.getLogger().warning("Failed to serialize item: " + e.getMessage());
             return new byte[0];
         }
-    }
-
-
-    private String optionalToString(UUID uuid) {
-        return uuid != null ? uuid.toString() : null;
     }
 
     @Override
@@ -195,9 +190,9 @@ public class SQLiteStorage implements BazaarStorage {
                 psBazaar.setBoolean(11, data.isClosed());
                 psBazaar.setDouble(12, data.getBankBalance());
 
-                psBazaar.setString(13, optionalToString(data.getVisualStandId()));
-                psBazaar.setString(14, optionalToString(data.getNameStandId()));
-                psBazaar.setString(15, optionalToString(data.getOwnerStandId()));
+                psBazaar.setString(13, data.getVisualStandId().toString());
+                psBazaar.setString(14, data.getNameStandId().toString());
+                psBazaar.setString(15, data.getOwnerStandId().toString());
 
                 psBazaar.addBatch();
 

@@ -25,6 +25,8 @@ import java.util.Objects;
 public class MMOBazaar extends JavaPlugin {
     public static NamespacedKey BAZAAR_ID_KEY;
 
+    private MMOBazaarContext context;
+
     @Override
     public void onEnable() {
         BAZAAR_ID_KEY = new NamespacedKey(this, "bazaar-id");
@@ -59,19 +61,20 @@ public class MMOBazaar extends JavaPlugin {
         }
         storage.init();
 
+        // Load bazaars from storage
+        Collection<BazaarData> loadedBazaars = storage.loadAll();
+        getLogger().info("Loaded " + loadedBazaars.size() + " bazaars from database.");
+
         // Setup MMOBazaar
-        final BazaarManager bazaarManager = new BazaarManager();
+        final BazaarManager bazaarManager = new BazaarManager(this, storage);
+        loadedBazaars.forEach(bazaarManager::registerBazaar);
+
         final BazaarBagFactory bagFactory = new BazaarBagFactory(config.getCreationFee());
         final MMOBazaarAPI api = new MMOBazaarAPI(bagFactory);
         final GUISessionManager guiSessions = new GUISessionManager();
 
-        // Load bazaars from storage
-        Collection<BazaarData> loadedBazaars = storage.loadAll();
-        getLogger().info("Loaded " + loadedBazaars.size() + " bazaars from database.");
-        loadedBazaars.forEach(bazaarManager::registerBazaar);
-
         // Setup context bundle for easier access to MMOBazaar
-        final MMOBazaarContext context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, api, guiSessions, config);
+        context = new MMOBazaarContext(this, vaultHook, bazaarManager, bagFactory, api, guiSessions, config, storage);
 
         // Register listeners
         final PluginManager pm = getServer().getPluginManager();
@@ -87,6 +90,17 @@ public class MMOBazaar extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Save all bazaars in case
+        if (this.context != null && this.context.storage != null) {
+            try {
+                Collection<BazaarData> bazaars = this.context.bazaarManager.getAllBazaars();
+                this.context.storage.saveAll(bazaars);
+                getLogger().info("Saved all " + bazaars.size() + " bazaars to storage.");
+            } catch (Exception e) {
+                getLogger().severe("Failed to save bazaars on shutdown: " + e.getMessage());
+            }
+        }
+
         getLogger().info("MMOBazaar disabled.");
     }
 }
